@@ -1,0 +1,18 @@
+#!/usr/bin/expect
+
+log_user 0
+set timeout 30
+set ipaddr [lindex $argv 0]
+set username [lindex $argv 1]
+set password [lindex $argv 2]
+set sPath [lindex $argv 3]
+set dPath [lindex $argv 4]
+
+spawn scp -r $username@$ipaddr:$sPath $dPath
+expect {
+	"(yes/no)?" {send "yes\r"; exp_continue}
+	"password:" {send "$password\r"}
+}
+
+interact
+log_user 1

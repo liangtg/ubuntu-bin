@@ -1,0 +1,58 @@
+#!/bin/bash
+
+
+usage() {
+	echo "usage: `basename $0` pull|push|shell"
+}
+
+
+if [ ! -f "/usr/bin/expect" ]; then
+	echo "please install expect(programmed dialogue with interactive programs)"
+	exit 1
+fi
+
+if [ $# -le 0 ]; then
+	usage
+	exit 1
+fi    
+
+TOOLSPATH=/usr/bin/cdb-tools
+CONFIGFILE=$HOME/.cdbconfig
+
+# default cdb config
+IPADDR=192.168.100.100
+USERNAME=developer
+PASSWORD=system
+
+if [ -f "$CONFIGFILE" ]; then
+	source $CONFIGFILE 
+fi
+
+ssh-keygen -f "$HOME/.ssh/known_hosts" -R $IPADDR >/dev/null 2>&1
+
+case $1 in
+	shell)
+		CMD=`echo $* | awk -F"shell" '{ print $2 }'`
+		$TOOLSPATH/shell.exp $IPADDR $USERNAME $PASSWORD "$CMD"
+	;;
+	shelo)
+		CMD=`echo $* | awk -F"shelo" '{ print $2 }'`
+		$TOOLSPATH/shelo.exp $IPADDR $USERNAME $PASSWORD "$CMD"
+	;;
+	pull)
+		if [ $# -ne 3 ]; then
+			usage
+			exit 1
+		fi
+		$TOOLSPATH/pull.exp $IPADDR $USERNAME $PASSWORD $2 $3
+	;;
+	push)
+		if [ $# -ne 3 ]; then
+			usage
+			exit 1
+		fi
+		$TOOLSPATH/push.exp $IPADDR $USERNAME $PASSWORD $2 $3
+	;;
+	*) usage
+	;;
+esac
